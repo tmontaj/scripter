@@ -1,10 +1,14 @@
 '''hprams for testing'''
 data_hprams = {
-    "speaker_verification": {
+    "audio2text": {
+        "reverse": "False",
+        "len_": True,
+        "batch": 2,
         "threshold": 5,
-        "sampling_rate": 16000,
-        "buffer_size": 1000,
-        "num_recordes": 3,
+        "is_spectrogram": True,
+        "remove_comma": False,
+        "alphabet_size": 26,
+        "first_letter": 96,
         "melspectrogram": {
             "nfft": 800,
             "window": 512,

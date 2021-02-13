@@ -73,9 +73,7 @@ def train_test():
     data, gbs = data_pipline(strategy)
     data = data.take(3)
     print("data", data)
-    for i in data:
-        print("sample", i)
-    data = strategy.experimental_distribute_dataset(data)
+    # data = strategy.experimental_distribute_dataset(data)
     n_epocs = 5
     dir_path = os.path.dirname(os.path.realpath(__file__))
     save_path = os.path.join(dir_path, "..", "..",

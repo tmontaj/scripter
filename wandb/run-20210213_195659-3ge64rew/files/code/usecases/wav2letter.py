@@ -73,17 +73,19 @@ def train_test():
     data, gbs = data_pipline(strategy)
     data = data.take(3)
     print("data", data)
-    for i in data:
-        print("sample", i)
-    data = strategy.experimental_distribute_dataset(data)
+    # data = strategy.experimental_distribute_dataset(data)
     n_epocs = 5
+    print("1")
     dir_path = os.path.dirname(os.path.realpath(__file__))
     save_path = os.path.join(dir_path, "..", "..",
                              "weights", "wav2letter")
+    print("2")
     with strategy.scope():
         optimizer = tf.optimizers.Adam()
         model = Wav2Let()
+    print("3")
     loss = ctc_loss(REAL_BATCH_SIZE=gbs, strategy=strategy)
+    print("4")
     fit(train_set=data, val_set=data, n_epocs=n_epocs, model=model,
         optimizer=optimizer, loss=loss, save_path=save_path,
         strategy=strategy, hcallbacks=hcallbacks)

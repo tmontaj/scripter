@@ -21,14 +21,13 @@ def fit(train_set, val_set, n_epocs, model,
     hcallbacks -- callbacks hyper parametars 
     '''
     wandb.init(project='audio2text')
-
-    with strategy.scope():
-        model.compile(loss=loss,
+    # with strategy.scope():
+    model.compile(loss=loss,
                         optimizer=optimizer)
-
     callbacks_=callbacks(path=save_path, **hcallbacks)
 
     model.fit(train_set,
-              epochs=12,
+              validation_data = val_set,
+              epochs=n_epocs,
               callbacks=callbacks_
               )

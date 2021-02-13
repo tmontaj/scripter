@@ -1,0 +1,45 @@
+diff --git a/usecases/wav2letter.py b/usecases/wav2letter.py
+index ca03c3b..d79757b 100644
+--- a/usecases/wav2letter.py
++++ b/usecases/wav2letter.py
+@@ -58,9 +58,8 @@ def data_pipline(strategy):
+     BATCH_SIZE_PER_REPLICA = data_hprams["batch"]
+     GLOBAL_BATCH_SIZE = BATCH_SIZE_PER_REPLICA * strategy.num_replicas_in_sync
+     REAL_BATCH_SIZE = GLOBAL_BATCH_SIZE * data_hprams["batch"]
+-    data = pipeline.speaker_verification(
++    data = pipeline.text_audio(
+         src=src, split="dev-clean", batch=GLOBAL_BATCH_SIZE, **data_hprams["audio2text"])
+-
+     return data, REAL_BATCH_SIZE
+ 
+ 
+@@ -73,13 +72,12 @@ def train_test():
+ 
+     data, gbs = data_pipline(strategy)
+     data = data.take(3)
+-
+-    data = strategy.experimental_distribute_dataset(data)
+-
++    print("data", data)
++    #data = strategy.experimental_distribute_dataset(data)
+     n_epocs = 5
+     dir_path = os.path.dirname(os.path.realpath(__file__))
+     save_path = os.path.join(dir_path, "..", "..",
+-                             "weights", "speaker_encoder")
++                             "weights", "wav2letter")
+ 
+     with strategy.scope():
+         optimizer = tf.optimizers.Adam()
+diff --git a/wav2let/fit.py b/wav2let/fit.py
+index 37e95ca..3b95f25 100644
+--- a/wav2let/fit.py
++++ b/wav2let/fit.py
+@@ -29,6 +29,7 @@ def fit(train_set, val_set, n_epocs, model,
+     callbacks_=callbacks(path=save_path, **hcallbacks)
+ 
+     model.fit(train_set,
+-              epochs=12,
++              validation_data = val_set,
++              epochs=n_epocs,
+               callbacks=callbacks_
+               )

@@ -1,0 +1,35 @@
+11
+12
+13
+2021-02-13 19:59:37.746623: I tensorflow/compiler/mlir/mlir_graph_optimization_pass.cc:116] None of the MLIR optimization passes are enabled (registered 2)
+2021-02-13 19:59:37.766736: I tensorflow/core/platform/profile_utils/cpu_utils.cc:112] CPU Frequency: 2300040000 Hz
+Traceback (most recent call last):
+  File "usecases/wav2letter.py", line 102, in <module>
+    train_test()
+  File "usecases/wav2letter.py", line 87, in train_test
+    strategy=strategy, hcallbacks=hcallbacks)
+  File "/home/ubuntu/payload/scripter/wav2let/fit.py", line 35, in fit
+    callbacks=callbacks_
+  File "/home/ubuntu/payload/scripter/venv/lib/python3.7/site-packages/wandb/integration/keras/keras.py", line 119, in new_v2
+    return old_v2(*args, **kwargs)
+  File "/home/ubuntu/payload/scripter/venv/lib/python3.7/site-packages/tensorflow/python/keras/engine/training.py", line 1064, in fit
+    steps_per_execution=self._steps_per_execution)
+  File "/home/ubuntu/payload/scripter/venv/lib/python3.7/site-packages/tensorflow/python/keras/engine/data_adapter.py", line 1121, in __init__
+    dataset = strategy.experimental_distribute_dataset(dataset)
+  File "/home/ubuntu/payload/scripter/venv/lib/python3.7/site-packages/tensorflow/python/distribute/distribute_lib.py", line 1059, in experimental_distribute_dataset
+    return self._extended._experimental_distribute_dataset(dataset, options)  # pylint: disable=protected-access
+  File "/home/ubuntu/payload/scripter/venv/lib/python3.7/site-packages/tensorflow/python/distribute/mirrored_strategy.py", line 529, in _experimental_distribute_dataset
+    num_replicas_in_sync=self._num_replicas_in_sync)
+  File "/home/ubuntu/payload/scripter/venv/lib/python3.7/site-packages/tensorflow/python/distribute/input_lib.py", line 101, in get_distributed_dataset
+    input_context=input_context)
+  File "/home/ubuntu/payload/scripter/venv/lib/python3.7/site-packages/tensorflow/python/distribute/input_lib.py", line 1011, in __init__
+    num_replicas_in_sync)
+  File "/home/ubuntu/payload/scripter/venv/lib/python3.7/site-packages/tensorflow/python/distribute/input_lib.py", line 1066, in _make_rebatch_fn
+    batch_size = distribute.compute_batch_size(dataset)
+  File "/home/ubuntu/payload/scripter/venv/lib/python3.7/site-packages/tensorflow/python/data/experimental/ops/distribute.py", line 500, in compute_batch_size
+    for ts in nest.flatten(dataset_ops.get_structure(dataset))
+  File "/home/ubuntu/payload/scripter/venv/lib/python3.7/site-packages/tensorflow/python/data/experimental/ops/distribute.py", line 500, in <listcomp>
+    for ts in nest.flatten(dataset_ops.get_structure(dataset))
+  File "/home/ubuntu/payload/scripter/venv/lib/python3.7/site-packages/tensorflow/python/data/experimental/ops/distribute.py", line 496, in get_static_batch_dim
+    return output_shape.dims[0].value
+IndexError: list index out of range

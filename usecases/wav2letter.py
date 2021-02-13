@@ -57,7 +57,7 @@ def data_pipline(strategy):
     safe_load(load, wtd, src, ["dev-clean"])
     BATCH_SIZE_PER_REPLICA = data_hprams["batch"]
     GLOBAL_BATCH_SIZE = BATCH_SIZE_PER_REPLICA * strategy.num_replicas_in_sync
-    REAL_BATCH_SIZE = GLOBAL_BATCH_SIZE * data_hprams["audio2text"]["num_recordes"]
+    REAL_BATCH_SIZE = GLOBAL_BATCH_SIZE * data_hprams["batch"]
     data = pipeline.speaker_verification(
         src=src, split="dev-clean", batch=GLOBAL_BATCH_SIZE, **data_hprams["audio2text"])
 

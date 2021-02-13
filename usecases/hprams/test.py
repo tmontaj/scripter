@@ -3,7 +3,6 @@ data_hprams = {
     "audio2text": {
         "reverse": "False",
         "len_": True,
-        "batch": 2,
         "threshold": 5,
         "is_spectrogram": True,
         "remove_comma": False,

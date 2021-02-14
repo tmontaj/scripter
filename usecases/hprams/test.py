@@ -1,7 +1,7 @@
 '''hprams for testing'''
 data_hprams = {
     "audio2text": {
-        "reverse": "False",
+        "reverse": True,
         "len_": True,
         "threshold": 5,
         "is_spectrogram": True,

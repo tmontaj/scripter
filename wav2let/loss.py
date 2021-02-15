@@ -12,15 +12,17 @@ def ctc_loss(REAL_BATCH_SIZE, strategy):
             y_true -- true labels (text, length of text).
             y_pred -- predected labels list of true labels.
             '''
-            label_length = y_true[1]
-            true_labels = y_true[0]
+            print("y_true", y_true)
+            print("y_pred", y_pred)
+            label_length = y_true[0][0]
+            true_labels = y_true[1:]
 
             batch = tf.shape(y_pred)[0]  # shape=(batch, time, char)
             char = tf.shape(y_pred)[2]  # shape=(batch, time, char)
             logit_length = tf.repeat([char], batch)
 
             ctc = tf.nn.ctc_loss(labels=true_labels, logits=y_pred, label_length=label_length,
-                                logit_length=logit_length)
+                                logit_length=logit_length, logits_time_major = True)
             
             return tf.nn.compute_average_loss(ctc, 
                                     global_batch_size=REAL_BATCH_SIZE)

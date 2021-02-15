@@ -80,7 +80,7 @@ class LastBlock(tf.keras.layers.Layer):
     '''
     Last layers of wav2letter for melspectrogem (not raw audio)
     '''
-    def __init__(self, output_size=29, **kwargs):
+    def __init__(self, output_size=30, **kwargs):
         '''
         Last layers of wav2letter
         Arguments:

@@ -50,3 +50,11 @@ class Wav2Let(tf.keras.Model):
         last_block = self.last_block(block_out)
 
         return last_block
+
+if __name__== "__main__":
+
+    import numpy as np
+    x= np.ones((1,15,10))
+    model = Wav2Let()
+    print(model(x))
+    #print(model.summary())

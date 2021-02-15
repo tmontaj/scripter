@@ -42,7 +42,9 @@ class ModelPause(tf.keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs=None):
         path=self.path 
         self.model.save_weights(path+"/"+str(epoch)+".h5")
-        os.remove(path+"/"+str(epoch-1)+".h5")
+        files = os.listdir(path)
+        if len(files) > 1:
+            os.remove(path+"/"+str(epoch-1)+".h5")
 
 
 class ModelSave(tf.keras.callbacks.Callback):

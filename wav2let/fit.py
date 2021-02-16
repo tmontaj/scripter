@@ -27,7 +27,7 @@ def fit(train_set, val_set, n_epocs, model,
     callbacks_=callbacks(path=save_path, **hcallbacks)
 
     model.fit(train_set,
-              #validation_data = val_set,
+              validation_data = val_set,
               epochs=n_epocs,
               callbacks=callbacks_
               )

@@ -80,9 +80,9 @@ def train_test():
     dir_path = os.path.dirname(os.path.realpath(__file__))
     save_path = os.path.join(dir_path, "..", "..",
                              "weights", "wav2letter")
-    # with strategy.scope():
-    optimizer = tf.optimizers.Adam()
-    model = Wav2Let()
+    with strategy.scope():
+        optimizer = tf.optimizers.Adam()
+        model = Wav2Let()
     loss = ctc_loss(REAL_BATCH_SIZE=gbs, strategy=strategy)
     fit(train_set=data, val_set=data, n_epocs=n_epocs, model=model,
         optimizer=optimizer, loss=loss, save_path=save_path,

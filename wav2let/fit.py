@@ -6,7 +6,7 @@ import tensorflow as tf
 from .callbacks import callbacks
 
 def fit(train_set, val_set, n_epocs, model,
-        optimizer, loss, save_path, strategy, hcallbacks):
+        optimizer, loss, save_path, strategy, hcallbacks, restart):
     '''
     fit function
     Arguments:
@@ -22,12 +22,39 @@ def fit(train_set, val_set, n_epocs, model,
     '''
     wandb.init(project='audio2text')
     # with strategy.scope():
-    model.compile(loss=loss,
-                        optimizer=optimizer)
-    callbacks_=callbacks(path=save_path, **hcallbacks)
 
-    model.fit(train_set,
-              validation_data = val_set,
-              epochs=n_epocs,
-              callbacks=callbacks_
-              )
+    if restart:
+        weights= os.listdir(save_path+"/temp")
+        for i in weights:
+            os.system("rm -r "+save_path+"/temp"+"/"+i)
+        n_epochs = n_epocs
+
+        model.compile(loss=loss,
+                            optimizer=optimizer)
+        callbacks_=callbacks(path=save_path, **hcallbacks)
+
+        model.fit(train_set,
+                validation_data = val_set,
+                epochs=n_epocs,
+                callbacks=callbacks_
+                )
+    else: 
+        epochs = []
+        weights= os.listdir(save_path+"/temp")
+        if len(weights)>1:
+            for i in weights:
+                epochs.append = int(i.split(".")[0])
+            del_ = min(epochs)
+            os.system("rm -r "+save_path+"/temp/"+str(del_)+".h5")
+            epoch = max(epochs)
+        else:
+            epoch = int(weights[0].split(".")[0])
+
+        n_epocs = n_epochs - epoch
+        model = tf.keras.models.load_model()save_path+"/temp/"+str(epoch)+".h5"
+        
+        model.fit(train_set,
+                validation_data = val_set,
+                epochs=n_epocs,
+                callbacks=callbacks_
+                )

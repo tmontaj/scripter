@@ -76,7 +76,7 @@ def train_test():
     # for i in data:
     #     print("sample", i)
     #data = strategy.experimental_distribute_dataset(data)
-    n_epocs = 5
+    n_epochs = 5
     dir_path = os.path.dirname(os.path.realpath(__file__))
     save_path = os.path.join(dir_path, "..", "..",
                              "weights", "wav2letter")
@@ -84,9 +84,9 @@ def train_test():
         optimizer = tf.optimizers.Adam()
         model = Wav2Let()
     loss = ctc_loss(REAL_BATCH_SIZE=gbs, strategy=strategy)
-    fit(train_set=data, val_set=data, n_epocs=n_epocs, model=model,
+    fit(train_set=data, val_set=data, n_epochs=n_epochs, model=model,
         optimizer=optimizer, loss=loss, save_path=save_path,
-        strategy=strategy, hcallbacks=hcallbacks, restart = True)
+        strategy=strategy, hcallbacks=hcallbacks, restart = False)
 
 
 if __name__ == '__main__':

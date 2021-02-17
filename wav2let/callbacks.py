@@ -41,10 +41,12 @@ class ModelPause(tf.keras.callbacks.Callback):
 
     def on_epoch_end(self, epoch, logs=None):
         path=self.path 
-        self.model.save(path+"/temp/"+str(epoch)+".h5")
-        files = os.listdir(path)
+        checkpoint = tf.train.Checkpoint(self.model)
+        checkpoint.save(path+"/temp/epoch_"+str(epoch)+"/model_"+str(epoch))
+        # self.model.save(path+"/temp/epoch_"+str(epoch)+"/model_"+str(epoch), save_format="tf")
+        files = os.listdir(path+"/temp")
         if len(files) > 1:
-            os.remove(path+"/temp/"+str(epoch-1)+".h5")
+            os.system("rm -r "+path+"/temp/epoch_"+str(epoch-1))
 
 
 class ModelSave(tf.keras.callbacks.Callback):

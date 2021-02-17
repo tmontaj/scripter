@@ -3,16 +3,17 @@ Fit function
 '''
 import wandb
 import tensorflow as tf
+import os
 from .callbacks import callbacks
 
-def fit(train_set, val_set, n_epocs, model,
+def fit(train_set, val_set, n_epochs, model,
         optimizer, loss, save_path, strategy, hcallbacks, restart):
     '''
     fit function
     Arguments:
     train_set -- train dataset
     val_set -- valedation dataset
-    n_epocs -- number of epocs to train
+    n_epochs -- number of epocs to train
     model -- model to train
     optimizer -- optimizer to be used
     loss -- loss function
@@ -27,7 +28,6 @@ def fit(train_set, val_set, n_epocs, model,
         weights= os.listdir(save_path+"/temp")
         for i in weights:
             os.system("rm -r "+save_path+"/temp"+"/"+i)
-        n_epochs = n_epocs
 
         model.compile(loss=loss,
                             optimizer=optimizer)
@@ -35,7 +35,7 @@ def fit(train_set, val_set, n_epocs, model,
 
         model.fit(train_set,
                 validation_data = val_set,
-                epochs=n_epocs,
+                epochs=n_epochs,
                 callbacks=callbacks_
                 )
     else: 
@@ -43,18 +43,22 @@ def fit(train_set, val_set, n_epocs, model,
         weights= os.listdir(save_path+"/temp")
         if len(weights)>1:
             for i in weights:
-                epochs.append = int(i.split(".")[0])
+                epochs.append = int(i.split("_")[1])
             del_ = min(epochs)
-            os.system("rm -r "+save_path+"/temp/"+str(del_)+".h5")
+            os.system("rm -r "+save_path+"/temp/epoch_"+str(del_))
             epoch = max(epochs)
         else:
-            epoch = int(weights[0].split(".")[0])
+            epoch = int(weights[0].split("_")[1])
 
-        n_epocs = n_epochs - epoch
-        model = tf.keras.models.load_model()save_path+"/temp/"+str(epoch)+".h5"
+        callbacks_=callbacks(path=save_path, **hcallbacks)
+        n_epochs = n_epochs - epoch
+        checkpoint = tf.train.Checkpoint(model)
+        checkpoint.restore(save_path+"/temp/epoch_"+str(epoch)+"/model_"+str(epoch)+"-"+str(epoch))
         
+        model.compile(loss=loss,
+                            optimizer=optimizer)
         model.fit(train_set,
                 validation_data = val_set,
-                epochs=n_epocs,
+                epochs=n_epochs,
                 callbacks=callbacks_
                 )

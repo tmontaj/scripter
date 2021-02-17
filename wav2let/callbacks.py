@@ -45,9 +45,9 @@ class ModelPause(tf.keras.callbacks.Callback):
         checkpoint.save(path+"/temp/epoch_"+str(epoch)+"/model_"+str(epoch))
         # self.model.save(path+"/temp/epoch_"+str(epoch)+"/model_"+str(epoch), save_format="tf")
         files = os.listdir(path+"/temp")
-        if len(files) > 1:
-            os.system("rm -r "+path+"/temp/epoch_"+str(epoch-1))
-
+        for i in files:
+            if int(i.split("_")[1]) != epoch:
+                os.system("rm -r "+path+"/temp/"+i)
 
 class ModelSave(tf.keras.callbacks.Callback):
     """

@@ -53,7 +53,7 @@ def fit(train_set, val_set, n_epochs, model,
         callbacks_=callbacks(path=save_path, **hcallbacks)
         n_epochs = n_epochs - epoch
         checkpoint = tf.train.Checkpoint(model)
-        checkpoint.restore(save_path+"/temp/epoch_"+str(epoch)+"/model_"+str(epoch)+"-"+str(epoch))
+        checkpoint.restore(save_path+"/temp/epoch_"+str(epoch)+"/model_"+str(epoch)+"-"+str(1))
         
         model.compile(loss=loss,
                             optimizer=optimizer)

@@ -86,7 +86,7 @@ def train_test():
     loss = ctc_loss(REAL_BATCH_SIZE=gbs, strategy=strategy)
     fit(train_set=data, val_set=data, n_epochs=n_epochs, model=model,
         optimizer=optimizer, loss=loss, save_path=save_path,
-        strategy=strategy, hcallbacks=hcallbacks, restart = True)
+        strategy=strategy, hcallbacks=hcallbacks, restart = False)
 
 
 if __name__ == '__main__':

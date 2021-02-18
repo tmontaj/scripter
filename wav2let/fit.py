@@ -50,13 +50,14 @@ def fit(train_set, val_set, n_epochs, model,
         else:
             epoch = int(weights[0].split("_")[1])
 
+        model.compile(loss=loss,
+                            optimizer=optimizer)
+
         callbacks_=callbacks(path=save_path, **hcallbacks)
         n_epochs = n_epochs - epoch
         checkpoint = tf.train.Checkpoint(model)
         checkpoint.restore(save_path+"/temp/epoch_"+str(epoch)+"/model_"+str(epoch)+"-"+str(1))
         
-        model.compile(loss=loss,
-                            optimizer=optimizer)
         model.fit(train_set,
                 validation_data = val_set,
                 epochs=n_epochs,

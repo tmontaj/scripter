@@ -95,13 +95,8 @@ def test():
         label_length = y[:,0]
         y_pred = ctc_decoder(y_pred, sequence_length = label_length )
         y_pred = tf.sparse.to_dense(y_pred[0][0])
-        tf.print("done")
-        tf.print("y_pred",type(y_pred))
-        tf.print("y",type(y))
         wer.update_state(y , y_pred)
-        tf.print("total WER error", wer.result())
         ler.update_state(y , y_pred)
-        tf.print("total LER error", ler.result())
 
 
 

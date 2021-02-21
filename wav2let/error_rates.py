@@ -4,7 +4,7 @@ import tensorflow as tf
 
 def object_error_rate(obj1, obj2):
   distance = nltk.edit_distance(obj1, obj2, transpositions=False)
-  len_ = obj1.shape[0]
+  len_ = len(obj1)
   return distance/len_
 
 class LER (tf.keras.metrics.Metric):
@@ -38,7 +38,6 @@ class WER (tf.keras.metrics.Metric):
     self.error_rate = object_error_rate
     self.total = 0.0
     self.space = space
-    # self.vnp2list = np.vectorize(self.np2list)
 
   def update_state(self, y_true, y_pred, sample_weight=None):
     y_true = y_true.numpy()
@@ -47,20 +46,11 @@ class WER (tf.keras.metrics.Metric):
     for i in range(y_true.shape[0]):
       space = np.argwhere(y_pred[i]==self.space)
       y_pred_ = np.split(y_pred[i], space.squeeze())
-      # print("y_pred_",y_pred_)
 
       len_y_true = y_true[i][0]
       y_true_ = y_true[i][1:len_y_true+1]
-      # y_true_ = np.delete(y_true_, [0], axis=0)
-      print("a",y_true_.shape)
-      print("type before",type(y_true_))
-
       space = np.argwhere(y_true_==self.space)
       y_true_ = np.split(y_true_, space.squeeze())
-      print("b",len(y_true_))
-
-
-      # print("y_true_", y_true_)
 
       total+=self.calc_wer(y_true_, y_pred_)
 
@@ -69,13 +59,11 @@ class WER (tf.keras.metrics.Metric):
 
   def result(self):return self.total
   
-  def np2list(self, np_arr): return np.array([i.tolist() for i in np_arr])
+  def np2list(self, np_arr): return [i.tolist() for i in np_arr]
 
   def calc_wer(self, y_true, y_pred):
     y_true = self.np2list(y_true)
     y_pred = self.np2list(y_pred)
-    print("type true", type(y_true[0]))
-    print("type pred", type(y_pred[0]))
     return self.error_rate(y_true, y_pred)
 
   def reset_states(self):

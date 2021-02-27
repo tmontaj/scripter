@@ -7,6 +7,32 @@ def object_error_rate(obj1, obj2):
   len_ = len(obj1)
   return distance/len_
 
+class Token_ER(tf.keras.metrics.Metric):
+  def __init__(self, object_error_rate, decoder, name="Token_ER", **kwargs):
+    super(Token_ER, self).__init__(name=name, **kwargs)
+    self.error_rate = object_error_rate
+    self.total_LER = 0.0
+    self.total_WER = 0.0
+    self.decoder = decoder
+
+    self.ler = LER(object_error_rate)
+    self.wer = WER(object_error_rate)
+ 
+  def update_state(self, y_true, y_pred, sample_weight=None):
+    sequence_length = tf.math.ceil(y_true[:,0]/2)
+    y_pred = self.decoder(y_pred, sequence_length=sequence_length)
+    self.total_wER = self.wer.update_state(y , y_pred)
+    self.total_LER = self.ler.update_state(y , y_pred)
+    return (self.total_wER, self.total_wER)
+        
+  def result(self):return (self.total_wER, self.total_wER)
+ 
+  def reset_states(self):
+    self.total_wER = 0
+    self.total_wER = 0
+    self.wer.reset_states()
+    self.ler.reset_states()
+
 class LER (tf.keras.metrics.Metric):
   def __init__(self, object_error_rate, name="LER", **kwargs):
     super(LER, self).__init__(name=name, **kwargs)

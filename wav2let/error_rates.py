@@ -19,8 +19,12 @@ class Token_ER(tf.keras.metrics.Metric):
     self.wer = WER(object_error_rate)
  
   def update_state(self, y_true, y_pred, sample_weight=None):
-    sequence_length = tf.math.ceil(y_true[:,0]/2)
+    sequence_length = tf.cast(tf.math.ceil(y_true[:,0]/2), tf.int32)
+    print("sequence_length", sequence_length)
+    print("y_pred", y_pred.shape)
     y_pred = self.decoder(y_pred, sequence_length=sequence_length)
+    y_pred = tf.sparse.to_dense(y_pred[0][0])
+    print("y_pred",y_pred)
     self.total_wER = self.wer.update_state(y , y_pred)
     self.total_LER = self.ler.update_state(y , y_pred)
     return (self.total_wER, self.total_wER)

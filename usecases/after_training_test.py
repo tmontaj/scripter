@@ -86,17 +86,13 @@ def test():
     loss = ctc_loss(REAL_BATCH_SIZE=gbs, strategy=strategy)
     optimizer = tf.optimizers.Adam()
 
-    model.compile(loss = loss, optimizer =optimizer)
+    model.compile(loss = loss, optimizer=optimizer)
 
-    wer = WER(object_error_rate)
-    ler = LER(object_error_rate)
+    ter = Token_ER(object_error_rate, decoder=ctc_decoder)
     for x,y in dev_data:
+        print("x", x.shape)
         y_pred = model.predict(x)
-        label_length = y[:,0]
-        y_pred = ctc_decoder(y_pred, sequence_length = label_length )
-        y_pred = tf.sparse.to_dense(y_pred[0][0])
-        wer.update_state(y , y_pred)
-        ler.update_state(y , y_pred)
+        ter.update_state(y , y_pred)
 
 
 

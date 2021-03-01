@@ -92,7 +92,11 @@ def test():
     for x,y in dev_data:
         print("x", x.shape)
         y_pred = model.predict(x)
+        print("y",y)
+        print("y[0]",y[0])
         ter.update_state(y , y_pred)
+        print("ter",ter.result)
+        
 
 
 

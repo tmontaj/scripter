@@ -1,3 +1,13 @@
+'''
+Test file for wav2letter uses dev-clean split of
+librispeach data set as it is small.
+
+This split is used as both train and val sets.
+The the train loop is used
+
+The aim of this file is to run tests only NEVER use it
+for real training
+'''
 import os
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -5,10 +15,9 @@ from hprams.test import data_hprams  # pylint: disable=imports
 from hprams.test import hcallbacks  # pylint: disable=imports
 from wav2let.model import Wav2Let  # pylint: disable=imports
 from wav2let.loss import ctc_loss  # pylint: disable=imports
-from wav2let.error_rates import *
-from wav2let.ctc_decoder import ctc_decoder
+from wav2let.fit import fit  # pylint: disable=imports
 import urllib.parse
-import tensorflow as tf 
+import tensorflow as tf
 
 
 def clone_dataset(username_, password_):
@@ -33,7 +42,7 @@ def clone_dataset(username_, password_):
     os.system(pip)
 
 
-def data_pipline_dev(strategy):
+def data_pipline(strategy):
     '''
     Download the dataset splits to ../dataset/dataset
 
@@ -45,56 +54,43 @@ def data_pipline_dev(strategy):
     src = os.path.join(home, "dataset")  # dataset repo link
     os.system("mkdir -p %s/dataset/librispeech" % (src))
     src = os.path.join(src, "dataset")  # dataset actual recordes link
-    safe_load(load, wtd, src, ["dev-clean"])
+    safe_load(load, wtd, src, ["train-clean-360","dev-clean"])
     BATCH_SIZE_PER_REPLICA = data_hprams["batch"]
     GLOBAL_BATCH_SIZE = BATCH_SIZE_PER_REPLICA * strategy.num_replicas_in_sync
     REAL_BATCH_SIZE = GLOBAL_BATCH_SIZE * data_hprams["batch"]
-    data = pipeline.text_audio(
+    train = pipeline.text_audio(
+        src=src, split="train-clean-360", batch=GLOBAL_BATCH_SIZE, **data_hprams["audio2text"])
+
+    dev = pipeline.text_audio(
         src=src, split="dev-clean", batch=GLOBAL_BATCH_SIZE, **data_hprams["audio2text"])
-    return data, REAL_BATCH_SIZE
+    return train, dev, REAL_BATCH_SIZE
 
-def data_pipline_train(strategy):
+
+def train():
     '''
-    Download the dataset splits to ../dataset/dataset
-
-    Returns:
-    data -- split data
+    Train loop (save metric ...etc to W&B)
     '''
-    # pass # use test code here
-    home = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    src = os.path.join(home, "dataset")  # dataset repo link
-    os.system("mkdir -p %s/dataset/librispeech" % (src))
-    src = os.path.join(src, "dataset")  # dataset actual recordes link
-    safe_load(load, wtd, src, ["dev-other"])
-    BATCH_SIZE_PER_REPLICA = data_hprams["batch"]
-    GLOBAL_BATCH_SIZE = BATCH_SIZE_PER_REPLICA * strategy.num_replicas_in_sync
-    REAL_BATCH_SIZE = GLOBAL_BATCH_SIZE * data_hprams["batch"]
-    data = pipeline.text_audio(
-        src=src, split="dev-other", batch=GLOBAL_BATCH_SIZE, **data_hprams["audio2text"])
-    return data, REAL_BATCH_SIZE
-
-
-def test():
     strategy = tf.distribute.MirroredStrategy()
     print('Number of devices: {}'.format(strategy.num_replicas_in_sync))
 
-    dev_data, gbs = data_pipline_dev(strategy)
-    dev_data = dev_data.take(1)
-    #train_data, gbs = data_pipline_train(strategy)
-
-    model = Wav2Let()
+    train, dev, gbs = data_pipline(strategy)
+    # data = train.take(450)
+    # print("data", data)
+    # for i in data:
+    #     print("sample", i)
+    train = strategy.experimental_distribute_dataset(train)
+    dev = strategy.experimental_distribute_dataset(dev)
+    n_epochs = 500000
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    save_path = os.path.join(dir_path, "..", "..",
+                             "weights", "wav2letter")
+    with strategy.scope():
+        optimizer = tf.optimizers.Adam()
+        model = Wav2Let()
     loss = ctc_loss(REAL_BATCH_SIZE=gbs, strategy=strategy)
-    optimizer = tf.optimizers.Adam()
-
-    model.compile(loss = loss, optimizer=optimizer)
-
-    ter = Token_ER(object_error_rate, decoder=ctc_decoder)
-    for x,y in dev_data:
-        y_pred = model.predict(x)
-        ter.update_state(y , y_pred)
-        print("ter",ter.result())
-        
-
+    fit(train_set=train, val_set=dev, n_epochs=n_epochs, model=model,
+        optimizer=optimizer, loss=loss, save_path=save_path,
+        strategy=strategy, hcallbacks=hcallbacks, restart=True)
 
 
 if __name__ == '__main__':
@@ -109,5 +105,4 @@ if __name__ == '__main__':
     from dataset.data.load import safe_load  # pylint: disable=imports
     import dataset.pipeline.librispeech as pipeline  # pylint: disable=imports
 
-    test()
-
+    train()

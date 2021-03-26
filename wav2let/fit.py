@@ -5,9 +5,11 @@ import wandb
 import tensorflow as tf
 import os
 from .callbacks import callbacks
+from .error_rates import *
+from .ctc_decoder import ctc_decoder
 
 def fit(train_set, val_set, n_epochs, model,
-        optimizer, loss, save_path, strategy, hcallbacks, restart):
+        optimizer, loss, save_path, strategy, hcallbacks, restart=True):
     '''
     fit function
     Arguments:
@@ -28,16 +30,7 @@ def fit(train_set, val_set, n_epochs, model,
         weights= os.listdir(save_path+"/temp")
         for i in weights:
             os.system("rm -r "+save_path+"/temp"+"/"+i)
-
-        model.compile(loss=loss,
-                            optimizer=optimizer)
-        callbacks_=callbacks(path=save_path, **hcallbacks)
-
-        model.fit(train_set,
-                validation_data = val_set,
-                epochs=n_epochs,
-                callbacks=callbacks_
-                )
+  
     else: 
         epochs = []
         weights= os.listdir(save_path+"/temp")
@@ -50,16 +43,15 @@ def fit(train_set, val_set, n_epochs, model,
         else:
             epoch = int(weights[0].split("_")[1])
 
-        model.compile(loss=loss,
-                            optimizer=optimizer)
-
-        callbacks_=callbacks(path=save_path, **hcallbacks)
-        n_epochs = n_epochs - epoch
-        checkpoint = tf.train.Checkpoint(model)
-        checkpoint.restore(save_path+"/temp/epoch_"+str(epoch)+"/model_"+str(epoch)+"-"+str(1))
-        
-        model.fit(train_set,
-                validation_data = val_set,
-                epochs=n_epochs,
-                callbacks=callbacks_
-                )
+    # metrics = [LER(object_error_rate, decoder=ctc_decoder),
+    #             WER(object_error_rate, decoder=ctc_decoder)]
+    # metrics = [Token_ER(object_error_rate, decoder=ctc_decoder)]
+    model.compile(loss=loss, optimizer=optimizer)#, metrics=metrics)
+    callbacks_=callbacks(path=save_path, **hcallbacks)
+    model.fit(train_set,
+            validation_data = val_set,
+            epochs=n_epochs,
+            callbacks=callbacks_,
+            steps_per_epoch=500,
+            validation_steps=100
+            )

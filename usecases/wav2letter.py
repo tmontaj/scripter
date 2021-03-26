@@ -54,13 +54,15 @@ def data_pipline(strategy):
     src = os.path.join(home, "dataset")  # dataset repo link
     os.system("mkdir -p %s/dataset/librispeech" % (src))
     src = os.path.join(src, "dataset")  # dataset actual recordes link
-    safe_load(load, wtd, src, ["dev-clean"])
+    safe_load(load, wtd, src, ["train-clean-100", "dev-clean"]) # train-clean-100
     BATCH_SIZE_PER_REPLICA = data_hprams["batch"]
     GLOBAL_BATCH_SIZE = BATCH_SIZE_PER_REPLICA * strategy.num_replicas_in_sync
     REAL_BATCH_SIZE = GLOBAL_BATCH_SIZE * data_hprams["batch"]
-    data = pipeline.text_audio(
+    train = pipeline.text_audio(
+        src=src, split="train-clean-100", batch=GLOBAL_BATCH_SIZE, **data_hprams["audio2text"])
+    dev   = pipeline.text_audio(
         src=src, split="dev-clean", batch=GLOBAL_BATCH_SIZE, **data_hprams["audio2text"])
-    return data, REAL_BATCH_SIZE
+    return train, dev, REAL_BATCH_SIZE
 
 
 def train_test():
@@ -70,12 +72,12 @@ def train_test():
     strategy = tf.distribute.MirroredStrategy()
     print('Number of devices: {}'.format(strategy.num_replicas_in_sync))
 
-    data, gbs = data_pipline(strategy)
-    data = data.take(3)
+    train_set, dev, gbs = data_pipline(strategy)
+    # data = data.take(3)
     # print("data", data)
     # for i in data:
     #     print("sample", i)
-    #data = strategy.experimental_distribute_dataset(data)
+    train_set = strategy.experimental_distribute_dataset(train_set)
     n_epochs = 5
     dir_path = os.path.dirname(os.path.realpath(__file__))
     save_path = os.path.join(dir_path, "..", "..",
@@ -84,9 +86,9 @@ def train_test():
         optimizer = tf.optimizers.Adam()
         model = Wav2Let()
     loss = ctc_loss(REAL_BATCH_SIZE=gbs, strategy=strategy)
-    fit(train_set=data, val_set=data, n_epochs=n_epochs, model=model,
+    fit(train_set=train_set, val_set=dev, n_epochs=n_epochs, model=model,
         optimizer=optimizer, loss=loss, save_path=save_path,
-        strategy=strategy, hcallbacks=hcallbacks, restart = False)
+        strategy=strategy, hcallbacks=hcallbacks, restart=True)
 
 
 if __name__ == '__main__':

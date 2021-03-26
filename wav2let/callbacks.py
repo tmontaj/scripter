@@ -6,7 +6,6 @@ from wandb.keras import WandbCallback
 from tensorflow.keras.callbacks import LearningRateScheduler, ReduceLROnPlateau, EarlyStopping
 import os
 import tensorflow as tf
-
 # wandb
 # wandb.init(project='audio2text')
 
@@ -83,5 +82,6 @@ def callbacks(path, n_epoch, patience, factor, patience_plateau):
         ModelPause(path),
         ModelSave(n_epoch, path),
         ReduceLROnPlateau(monitor='val_loss', factor=factor,
-                          patience=patience_plateau)
+                          patience=patience_plateau),
+
     ]

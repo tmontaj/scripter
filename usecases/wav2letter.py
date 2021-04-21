@@ -54,12 +54,12 @@ def data_pipline(strategy):
     src = os.path.join(home, "dataset")  # dataset repo link
     os.system("mkdir -p %s/dataset/librispeech" % (src))
     src = os.path.join(src, "dataset")  # dataset actual recordes link
-    safe_load(load, wtd, src, ["train-clean-100", "dev-clean"]) # train-clean-100
+    safe_load(load, wtd, src, ["train-clean-360", "dev-clean"]) # train-clean-100
     BATCH_SIZE_PER_REPLICA = data_hprams["batch"]
     GLOBAL_BATCH_SIZE = BATCH_SIZE_PER_REPLICA * strategy.num_replicas_in_sync
     REAL_BATCH_SIZE = GLOBAL_BATCH_SIZE * data_hprams["batch"]
     train = pipeline.text_audio(
-        src=src, split="train-clean-100", batch=GLOBAL_BATCH_SIZE, **data_hprams["audio2text"])
+        src=src, split="train-clean-360", batch=GLOBAL_BATCH_SIZE, **data_hprams["audio2text"])
     dev   = pipeline.text_audio(
         src=src, split="dev-clean", batch=GLOBAL_BATCH_SIZE, **data_hprams["audio2text"])
     return train, dev, REAL_BATCH_SIZE
@@ -69,7 +69,7 @@ def train_test():
     '''
     Train loop (save metric ...etc to W&B)
     '''
-    strategy = tf.distribute.MirroredStrategy()
+    strategy = tf.distribute.OneDeviceStrategy()
     print('Number of devices: {}'.format(strategy.num_replicas_in_sync))
 
     train_set, dev, gbs = data_pipline(strategy)
@@ -78,7 +78,9 @@ def train_test():
     # for i in data:
     #     print("sample", i)
     train_set = strategy.experimental_distribute_dataset(train_set)
-    n_epochs = 5
+    dev = strategy.experimental_distribute_dataset(dev)
+
+    n_epochs = 500000
     dir_path = os.path.dirname(os.path.realpath(__file__))
     save_path = os.path.join(dir_path, "..", "..",
                              "weights", "wav2letter")

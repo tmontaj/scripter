@@ -18,11 +18,11 @@ data_hprams = {
         }
     },
 
-    "batch": 2,
+    "batch": 3,
 }
 
 hcallbacks = {
-    "n_epoch": 3,
+    "n_epoch": 30,
     "patience": 3,
     "factor": 0.1,
     "patience_plateau": 4,

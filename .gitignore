@@ -17,6 +17,6 @@ venv/
 tmp/
 dataset/
 wandb/
-
+manual_hprams_tune/
 
 .VSCodeCounter/

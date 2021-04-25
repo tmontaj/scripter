@@ -28,8 +28,8 @@ class Token_ER(tf.keras.metrics.Metric):
     self.total_wer = 0.0
     self.decoder = decoder
 
-    self.ler = LER(object_error_rate)
-    self.wer = WER(object_error_rate)
+    self.ler = LER(object_error_rate, decoder)
+    self.wer = WER(object_error_rate, decoder)
  
   def update_state(self, y_true, y_pred, sample_weight=None):
     sequence_length = tf.cast(tf.math.ceil(y_true[:,0]/2), tf.int32)

@@ -88,7 +88,7 @@ def test():
 
     model.compile(loss = loss, optimizer=optimizer)
 
-    ter = Token_ER(object_error_rate, decoder=ctc_decoder)
+    ter = WER(object_error_rate=object_error_rate, decoder=ctc_decoder)
     for x,y in dev_data:
         y_pred = model.predict(x)
         ter.update_state(y , y_pred)

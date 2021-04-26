@@ -48,7 +48,7 @@ def calculate_LER(model, object_error_rate=object_error_rate, data):
     
     return real_ler
 
-def decode_data(model, decoder=ctc_decoder, data):
+def predict_sample(model, decoder=ctc_decoder, sample):
     y_pred = model.predict(sample)
 
     y_true_shape = tf.shape(y)[0]
@@ -57,3 +57,20 @@ def decode_data(model, decoder=ctc_decoder, data):
     y_pred = self.decoder(y_pred, sequence_length=sequence_length)
 
         
+def one_hot_decode(one_hot):
+    index = tf.argmax(one_hot, axis=0)
+
+    return index
+
+def int2string(ints, alphabet_size = 26, first_letter=97, len_=True):
+   
+    ints = ints[ints != 0]
+    ints = ints+first_letter-1
+
+    ints = tf.where(ints==(first_letter-1)+alphabet_size+1, 46, ints) # replace dot
+    ints = tf.where(ints==(first_letter-1)+alphabet_size+2, 32, ints) # replace space
+    ints = tf.where(ints==(first_letter-1)+alphabet_size+3, 44, ints) # replace comma
+
+    ints = tf.strings.unicode_encode(ints, output_encoding="UTF-8")
+    # ints = ints.numpy().decode('UTF-8')
+    return ints

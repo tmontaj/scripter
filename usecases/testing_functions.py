@@ -1,7 +1,7 @@
 
 import os
 import tensorflow as tf
-from wav2let.error_rates import *
+from wav2let.error_rates_non_graph import *
 from wav2let.ctc_decoder import ctc_decoder
 
 
@@ -22,8 +22,8 @@ def load_model(path):
     model = tf.keras.models.load_model("path"+"/"+"_"+str(last)+".h5")
     return model
 
-def calculate_WER(model, decoder=ctc_decoder, data):
-    wer = WER(decoder)
+def calculate_WER(model, object_error_rate=object_error_rate, data):
+    wer = WER(object_error_rate)
     total_wer = 0
     real_wer = total_wer/i
     i = 1
@@ -35,8 +35,8 @@ def calculate_WER(model, decoder=ctc_decoder, data):
     
     return real_wer
 
-def calculate_LER(model, decoder=ctc_decoder, data):
-    ler = LER(decoder)
+def calculate_LER(model, object_error_rate=object_error_rate, data):
+    ler = LER(object_error_rate)
     total_ler = 0
     real_ler = total_ler/i
     i = 1
@@ -48,7 +48,7 @@ def calculate_LER(model, decoder=ctc_decoder, data):
     
     return real_ler
 
-def predict_sample(model, decoder=ctc_decoder, sample):
+def decode_data(model, decoder=ctc_decoder, data):
     y_pred = model.predict(sample)
 
     y_true_shape = tf.shape(y)[0]

@@ -52,6 +52,6 @@ def fit(train_set, val_set, n_epochs, model,
             validation_data = val_set,
             epochs=n_epochs,
             callbacks=callbacks_,
-            steps_per_epoch=500,
-            validation_steps=100
+            steps_per_epoch=5,
+            validation_steps=3
             )

@@ -54,22 +54,22 @@ def data_pipline(strategy):
     src = os.path.join(home, "dataset")  # dataset repo link
     os.system("mkdir -p %s/dataset/librispeech" % (src))
     src = os.path.join(src, "dataset")  # dataset actual recordes link
-    safe_load(load, wtd, src, ["train-clean-360", "dev-clean"]) # train-clean-100
+    safe_load(load, wtd, src, ["dev-clean"]) # train-clean-100
     BATCH_SIZE_PER_REPLICA = data_hprams["batch"]
-    GLOBAL_BATCH_SIZE = BATCH_SIZE_PER_REPLICA * strategy.num_replicas_in_sync
-    REAL_BATCH_SIZE = GLOBAL_BATCH_SIZE * data_hprams["batch"]
+    REAL_BATCH_SIZE = BATCH_SIZE_PER_REPLICA * strategy.num_replicas_in_sync
     train = pipeline.text_audio(
-        src=src, split="train-clean-360", batch=GLOBAL_BATCH_SIZE, **data_hprams["audio2text"])
+        src=src, split="dev-clean", batch=REAL_BATCH_SIZE, **data_hprams["audio2text"])
     dev   = pipeline.text_audio(
-        src=src, split="dev-clean", batch=GLOBAL_BATCH_SIZE, **data_hprams["audio2text"])
+        src=src, split="dev-clean", batch=REAL_BATCH_SIZE, **data_hprams["audio2text"])
     return train, dev, REAL_BATCH_SIZE
+  
 
-
-def train_test():
+def train_test(username, password):
     '''
     Train loop (save metric ...etc to W&B)
     '''
-    strategy = tf.distribute.OneDeviceStrategy()
+    strategy = tf.distribute.MirroredStrategy()
+    print("*_*_*_*_*_*_*_*_*_*_*_*_*_*_*_*_*_*_*_")
     print('Number of devices: {}'.format(strategy.num_replicas_in_sync))
 
     train_set, dev, gbs = data_pipline(strategy)
@@ -77,6 +77,8 @@ def train_test():
     # print("data", data)
     # for i in data:
     #     print("sample", i)
+    print("gbs")
+    print(gbs)
     train_set = strategy.experimental_distribute_dataset(train_set)
     dev = strategy.experimental_distribute_dataset(dev)
 
@@ -88,6 +90,9 @@ def train_test():
         optimizer = tf.optimizers.Adam()
         model = Wav2Let()
     loss = ctc_loss(REAL_BATCH_SIZE=gbs, strategy=strategy)
+    hcallbacks["lr"]=0.001
+    hcallbacks["username_"]=username
+    hcallbacks["password_"]=password
     fit(train_set=train_set, val_set=dev, n_epochs=n_epochs, model=model,
         optimizer=optimizer, loss=loss, save_path=save_path,
         strategy=strategy, hcallbacks=hcallbacks, restart=True)
@@ -105,4 +110,4 @@ if __name__ == '__main__':
     from dataset.data.load import safe_load  # pylint: disable=imports
     import dataset.pipeline.librispeech as pipeline  # pylint: disable=imports
 
-    train_test()
+    train_test(username, password)

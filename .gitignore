@@ -20,3 +20,6 @@ wandb/
 manual_hprams_tune/
 
 .VSCodeCounter/
+
+*.tmp
+*.pyc

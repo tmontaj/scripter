@@ -63,7 +63,7 @@ class ModelSave(tf.keras.callbacks.Callback):
         if epoch % self.n_epoch == 0:
             self.model.save_weights(path+"/_"+str(epoch)+".h5")
 
-def manual_lr(username_, password_, lr):
+def manual_lr(username_, password_, file_path, lr):
     # git clone       -
     # make json file  -
     # init schedule   -
@@ -81,12 +81,12 @@ def manual_lr(username_, password_, lr):
     pip = "pip install -r wav2let/manual_hprams_tune/requirements.txt" 
     os.system(pip)
 
-    from manual_hprams_tune import update_lr
-    from manual_hprams_tune import get_lr
+    from .manual_hprams_tune import update_lr
+    from .manual_hprams_tune import get_lr
 
-    update_lr.write_json("./wav2let/manual_hprams_tune/var.json",{"lr":lr})
+    update_lr.write_json(file_path,{"lr":lr})
 
-    schedule = get_lr.load_learning_rate('./wav2let/manual_hprams_tune/var.json')
+    schedule = get_lr.load_learning_rate(file_path)
     return tf.keras.callbacks.LearningRateScheduler(schedule, verbose=0)
 
 
@@ -108,10 +108,10 @@ def callbacks(username_, password_, file_path, lr,
         WandbCallback(),
         # EarlyStopping(patience=patience),
         # LearningRateScheduler(schedule = scheduler),
-        ModelPause(path),
+        # ModelPause(path),
         ModelSave(n_epoch, path),
-        ReduceLROnPlateau(monitor='val_loss', factor=factor,
-                          patience=patience_plateau),
+        # ReduceLROnPlateau(monitor='val_loss', factor=factor,
+        #                   patience=patience_plateau),
         manual_lr(username_, password_, file_path, lr)
 
     ]

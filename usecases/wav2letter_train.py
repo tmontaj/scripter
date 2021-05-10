@@ -78,6 +78,9 @@ def train():
     # print("data", data)
     # for i in data:
     #     print("sample", i)
+    hcallbacks["lr"]=0.001
+    hcallbacks["username_"]=username
+    hcallbacks["password_"]=password
     train = strategy.experimental_distribute_dataset(train)
     dev = strategy.experimental_distribute_dataset(dev)
     n_epochs = 500000

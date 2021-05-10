@@ -18,12 +18,13 @@ data_hprams = {
         }
     },
 
-    "batch": 3,
+    "batch": 2,
 }
 
 hcallbacks = {
-    "n_epoch": 30,
+    "n_epoch": 10,
     "patience": 3,
     "factor": 0.1,
     "patience_plateau": 4,
+    "file_path":"./wav2let/manual_hprams_tune/var.json",
 }

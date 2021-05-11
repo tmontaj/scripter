@@ -1,8 +1,11 @@
 '''
 wav2letter model
 '''
-from .blocks import *
-
+try:
+    from .blocks import *
+except:
+    from blocks import *
+    
 class Wav2Let(tf.keras.Model):
     '''wav2letter model'''
 

@@ -18,7 +18,7 @@ from wav2let.loss import ctc_loss  # pylint: disable=imports
 from wav2let.fit import fit  # pylint: disable=imports
 import urllib.parse
 import tensorflow as tf
-
+import pickle
 
 def clone_dataset(username_, password_):
     '''
@@ -73,16 +73,19 @@ def train_test(username, password):
     print('Number of devices: {}'.format(strategy.num_replicas_in_sync))
 
     train_set, dev, gbs = data_pipline(strategy)
-    # data = data.take(3)
+    data = dev.take(1)
     # print("data", data)
-    # for i in data:
+    for i in data:
+        pickle.dump(i,open( "sample.io", "wb" ))
     #     print("sample", i)
-    print("gbs")
+    # print("gbs")
+    # print("sample", next(iter(train_set.take(1))))
+
     print(gbs)
     train_set = strategy.experimental_distribute_dataset(train_set)
     dev = strategy.experimental_distribute_dataset(dev)
 
-    n_epochs = 500000
+    n_epochs = 120
     dir_path = os.path.dirname(os.path.realpath(__file__))
     save_path = os.path.join(dir_path, "..", "..",
                              "weights", "wav2letter")

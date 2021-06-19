@@ -9,7 +9,7 @@ from .error_rates import *
 from .ctc_decoder import ctc_decoder
 
 def fit(train_set, val_set, n_epochs, model,
-        optimizer, loss, save_path, strategy, hcallbacks, restart=True):
+        optimizer, loss, save_path, hcallbacks, restart=True, strategy=None):
     '''
     fit function
     Arguments:

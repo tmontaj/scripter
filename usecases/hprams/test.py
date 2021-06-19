@@ -7,7 +7,7 @@ data_hprams = {
         "is_spectrogram": True,
         "remove_comma": False,
         "alphabet_size": 26,
-        "first_letter": 96,
+        "first_letter": 97,
         "melspectrogram": {
             "nfft": 800,
             "window": 512,

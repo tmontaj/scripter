@@ -14,7 +14,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from hprams.test import data_hprams  # pylint: disable=imports
 from hprams.test import hcallbacks  # pylint: disable=imports
 from wav2let.model import Wav2Let  # pylint: disable=imports
-from wav2let.loss import ctc_loss  # pylint: disable=imports
+from wav2let.loss import ctc_loss, simple_ctc_loss  # pylint: disable=imports
 from wav2let.fit import fit  # pylint: disable=imports
 import urllib.parse
 import tensorflow as tf
@@ -42,7 +42,7 @@ def clone_dataset(username_, password_):
     os.system(pip)
 
 
-def data_pipline(strategy):
+def data_pipline():
     '''
     Download the dataset splits to ../dataset/dataset
 
@@ -55,50 +55,44 @@ def data_pipline(strategy):
     os.system("mkdir -p %s/dataset/librispeech" % (src))
     src = os.path.join(src, "dataset")  # dataset actual recordes link
     safe_load(load, wtd, src, ["dev-clean"]) # train-clean-100
-    BATCH_SIZE_PER_REPLICA = data_hprams["batch"]
-    REAL_BATCH_SIZE = BATCH_SIZE_PER_REPLICA * strategy.num_replicas_in_sync
+    batch = data_hprams["batch"]
     train = pipeline.text_audio(
-        src=src, split="dev-clean", batch=REAL_BATCH_SIZE, **data_hprams["audio2text"])
+        src=src, split="dev-clean", batch=batch, **data_hprams["audio2text"])
     dev   = pipeline.text_audio(
-        src=src, split="dev-clean", batch=REAL_BATCH_SIZE, **data_hprams["audio2text"])
-    return train, dev, REAL_BATCH_SIZE
+        src=src, split="dev-clean", batch=batch, **data_hprams["audio2text"])
+    return train, dev
   
 
 def train_test(username, password):
     '''
     Train loop (save metric ...etc to W&B)
     '''
-    strategy = tf.distribute.MirroredStrategy()
-    print("*_*_*_*_*_*_*_*_*_*_*_*_*_*_*_*_*_*_*_")
-    print('Number of devices: {}'.format(strategy.num_replicas_in_sync))
 
-    train_set, dev, gbs = data_pipline(strategy)
+    train_set, dev = data_pipline()
     data = dev.take(1)
-    # print("data", data)
-    for i in data:
-        pickle.dump(i,open( "sample.io", "wb" ))
-        print("sample", i)
-    # print("gbs")
-    # print("sample", next(iter(train_set.take(1))))
 
-    print(gbs)
-    train_set = strategy.experimental_distribute_dataset(train_set)
-    dev = strategy.experimental_distribute_dataset(dev)
+    train_set = train_set.take(10)
+    dev = dev.take(10)
+    # for i in data:
+    #     print(i[0][0][0])
 
+    # for i in data:
+    #     print(i[0][0][0])
+    
     n_epochs = 120
     dir_path = os.path.dirname(os.path.realpath(__file__))
     save_path = os.path.join(dir_path, "..", "..",
-                             "weights", "wav2letter")
-    with strategy.scope():
-        optimizer = tf.optimizers.Adam()
-        model = Wav2Let()
-    loss = ctc_loss(REAL_BATCH_SIZE=gbs, strategy=strategy)
+                             "weights", "wav2letter_overfit")
+    
+    optimizer = tf.optimizers.Adam()
+    model = Wav2Let()
+    loss = simple_ctc_loss
     hcallbacks["lr"]=0.001
     hcallbacks["username_"]=username
     hcallbacks["password_"]=password
-    # fit(train_set=train_set, val_set=dev, n_epochs=n_epochs, model=model,
-    #     optimizer=optimizer, loss=loss, save_path=save_path,
-    #     strategy=strategy, hcallbacks=hcallbacks, restart=True)
+    fit(train_set=train_set, val_set=dev, n_epochs=n_epochs, model=model,
+        optimizer=optimizer, loss=loss, save_path=save_path,
+        hcallbacks=hcallbacks, restart=True)
 
 
 if __name__ == '__main__':
